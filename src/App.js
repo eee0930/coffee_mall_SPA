@@ -16,6 +16,9 @@ class App {
     this.$target.append($page);
   }
 
+  /**
+   * 페이지 세팅, 라우터 설정
+   */
   settingPage = () => {
     const { pathname } = location;
     const $page = document.createElement("div");

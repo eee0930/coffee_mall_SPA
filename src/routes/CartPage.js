@@ -9,6 +9,9 @@ class CartPage {
     this.totalPrice = 0;
   }
  
+  /**
+   * 카트 페이지 렌더링
+   */
   renderCartPage = () => {
     const $h1 = createElement("h1");
     const $cart = createElement("div", "Cart");
@@ -21,6 +24,10 @@ class CartPage {
     this.$target.append($h1, $cart);
   }
  
+  /**
+   * 카트 아이템 태그 표시
+   * @returns 
+   */
   renderCartItems = () => {
     const $ul = createElement("ul");
     Object.values(this.orderItemList).map(orderItem => {
@@ -39,12 +46,19 @@ class CartPage {
     return $ul;
   }
    
+  /**
+   * 총 상품가격 태그 표시
+   * @returns 
+   */
   renderTotalPrice = () => {
     const $Cart__totalPrice = createElement("div", "Cart__totalPrice");
     $Cart__totalPrice.innerText = `총 상품가격 ${repaintPrice(this.totalPrice, true)}`;
     return $Cart__totalPrice;
   }
 
+  /**
+   * 카트 상품목록들 세팅
+   */
   settingCartItems = () => {
     const localItem = localStorage.getItem("orderItemList");
     localStorage.removeItem("orderItemList");

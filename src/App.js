@@ -54,6 +54,7 @@ class App {
     const cartPage = new CartPage({ 
       $target 
     });
+    cartPage.settingCartItems();
   }
 }
 

@@ -11,26 +11,24 @@ class ProductDetailPage {
     this.$target = $target;
     this.productId = productId;
     this.url = url;
-    this.productPrice = 0;
     this.orderItem;
-    this.productName = "";
+    this.productInfo = {};
     this.options = {};
   }
 
-  renderProductDetail = (product) => {
-    const { imageUrl } = product;
+  renderProductDetail = () => {
     const $title = this.renderPageTitle();
     const $productDetail = createElement("div", "ProductDetail");
     const $img = createElement("img");
     const $productDetail__info = this.renderProductDetailInfo();
-    $img.src = imageUrl;
+    $img.src = this.productInfo.imageUrl;
     $productDetail.append($img, $productDetail__info);
     this.$target.append($title, $productDetail);
   }
 
   renderPageTitle = () => {
     const $title = createElement("h1");
-    $title.innerText = `${this.productName} ${TITLE}`;
+    $title.innerText = `${this.productInfo.name} ${TITLE}`;
     return $title;
   }
 
@@ -44,8 +42,8 @@ class ProductDetailPage {
     const $productDetail__totalPrice = createElement("div", "ProductDetail__totalPrice");
     const $orderButton = createElement("button", "OrderButton");
     const $select = this.renderProductOptionSelect();
-    $productDetail__price.innerText = repaintPrice(this.productPrice);
-    $h2.innerText = this.productName;
+    $productDetail__price.innerText = repaintPrice(this.productInfo.price);
+    $h2.innerText = this.productInfo.name;
     $h3.innerText = SELECTED_TITLE;
     $orderButton.innerText = BUTTON_VALUE;
     $orderButton.addEventListener("click", this.handleClickOrderBtn);
@@ -68,9 +66,10 @@ class ProductDetailPage {
     return $select;
   }
 
-  renderOrderItems = (orderItemList) => {
+  renderOrderItems = () => {
+    const orderItemList = this.orderItem.getOrderItemList();
     const $newUl = createElement("ul");
-    orderItemList.map(orderItem => {
+    Object.values(orderItemList).map(orderItem => {
       const { amount, name, price } = orderItem;
       const $li = createElement("li");
       const $div = createElement("div");
@@ -78,10 +77,10 @@ class ProductDetailPage {
       $input.type = "number";
       $input.value = amount;
       $div.append($input, "개");
-      const msg = `${this.productName} ${name} ${repaintPrice(price, true)} `;
+      const msg = `${this.productInfo.name} ${name} ${repaintPrice(price, true)} `;
       $li.append(msg, $div);
       $newUl.appendChild($li);
-    })
+    });
     const $parent = document.querySelector(".ProductDetail__selectedOptions");
     const $oldUl = $parent.querySelector("ul");
     $parent.replaceChild($newUl, $oldUl);
@@ -93,13 +92,6 @@ class ProductDetailPage {
     $price.innerText = repaintPrice(totalPrice, true);
   }
 
-  handleChangeOption = (e) => {
-    const value = e.target.value;
-    if(value > -1) {
-      this.settingOrderItems(value);
-    }
-  }
-
   updateOptionSelect = () => {
     const $productDetail__info = document.querySelector(".ProductDetail__info");
     const $oldSelect = $productDetail__info.querySelector("select");
@@ -107,29 +99,46 @@ class ProductDetailPage {
     $productDetail__info.replaceChild($newSelect, $oldSelect);
   }
 
-  handleClickOrderBtn = () => {
+  handleChangeOption = (e) => {
+    const value = e.target.value;
+    if(value > -1) {
+      this.settingOrderItems(value);
+    }
+  }
 
+  handleClickOrderBtn = () => {
+    const orderItemList = this.orderItem.getOrderItemList();
+    const totalPrice = this.orderItem.getTotalPrice();
+    const saveItem = {
+      productInfo: this.productInfo,
+      orderItemList,
+      totalPrice,
+    }
+    localStorage.setItem("orderItemList", JSON.stringify(saveItem));
+    location.pathname = this.url;
   }
 
   settingOrderItems = (optionId) => {
     this.setOptions(this.options, optionId);
     this.orderItem.setOrderItemList(optionId);
-    const orderItemList = this.orderItem.getOrderItemList();
-    this.renderOrderItems(Object.values(orderItemList));
+    this.renderOrderItems();
     this.renderTotalPrice();
     this.updateOptionSelect();
   }
 
   settingProductDetail = async () => {
     const productDetail = await fetchProductById(this.productId);
-    this.productName = productDetail.name;
-    this.productPrice = productDetail.price
-    this.options = this.setOptions(productDetail.productOptions);
+    this.productInfo = {
+      name: productDetail.name,
+      price: productDetail.price,
+      imageUrl: productDetail.imageUrl,
+    }
+    this.setOptions(productDetail.productOptions);
     this.orderItem = new OrderItem({
-      productPrice: this.productPrice, 
+      productPrice: this.productInfo.price, 
       options: this.options,
     });
-    this.renderProductDetail(productDetail);
+    this.renderProductDetail();
   }
 
   settingSelectOptions = (optionId, optionValue) => {
@@ -141,9 +150,9 @@ class ProductDetailPage {
       $option.disabled = true;
     }
     if(price === 0) {
-      optionName += `${this.productName} ${name}`;
+      optionName += `${this.productInfo.name} ${name}`;
     } else {
-      optionName += `${this.productName} ${name} (+${repaintPrice(price, true)})`;
+      optionName += `${this.productInfo.name} ${name} (+${repaintPrice(price, true)})`;
     }
     $option.value = optionId;
     $option.innerText = optionName;
@@ -164,7 +173,7 @@ class ProductDetailPage {
         };
       })
     }
-    return optionObj;
+    this.options = optionObj;
   }
 
 }

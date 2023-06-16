@@ -1,6 +1,6 @@
-import ProductListPage from "./components/ProductListPage.js";
-import ProductDetailPage from "./components/ProductDetailPage.js";
-import CartPage from "./components/CartPage.js";
+import ProductListPage from "./routes/ProductListPage.js";
+import ProductDetailPage from "./routes/ProductDetailPage.js";
+import CartPage from "./routes/CartPage.js";
 
 const PRODUCTLIST_URL = "/";
 const PRODUCTDETAIL_URL = "/products/";
@@ -23,7 +23,6 @@ class App {
       $page.classList.add("ProductListPage");
       this.settingProductListPage($page);
     } else if (pathname.startsWith(PRODUCTDETAIL_URL)) {
-      console.log("하이")
       const id = pathname.slice(PRODUCTDETAIL_URL.length);
       $page.classList.add("ProductDetailPage");
       this.settingProductDetailPage($page, id);
@@ -48,6 +47,7 @@ class App {
       productId: id,
       url: CART_URL
     });
+    productDetailPage.settingProductDetail();
   }
 
   settingCartPage = ($target) => {
